@@ -26,7 +26,7 @@ glimpse(climas)
 
 ### Onde é mais quente?
 
-Para responder esta questão iremos considerar a média anual de temperatura de cada cidade com base, a priori, na variável tmedia. Sendo assim, temos: 
+Para responder esta questão iremos considerar a média anual de temperatura de cada cidade com base, a priori, na variável tmedia (temperatura média semanal). Sendo assim, temos: 
 
 ```{r}
 #descobrir quantas cidades diferentes estão presentes na base de dados. 
@@ -75,7 +75,37 @@ Sendo assim, com base no gráfico de temperatura média anual de cada cidade plo
 
 
 ### Quais os meses mais quentes e mais frios? 
+Para responder esta questão, iremos novamente considerar a média da variável tmedia, porém desta vez não faremos distinção entre as cidades, agrupando os dados apenas pelos meses. Sendo assim, temos:
 
+```{r}
+
+# Calcular e ordenar temperatura média por mês
+df.mean.temp.month = climas %>% group_by(mes) %>% summarise(tmedia.mes = mean(tmedia)) %>% arrange(desc(tmedia.mes))
+
+#plotar média bar chart
+
+ggplot(df.mean.temp.month, aes(x=mes, y=tmedia.mes)) +
+  geom_bar(stat="identity", color="black", fill = "steelblue", position = "dodge", width = 0.5)+
+    theme_gray()+
+    geom_text(aes(label=round(tmedia.mes,digits = 2)), vjust=-0.6, color="black", size=3)+
+    
+
+ggsave("temp_media_mes.png")
+
+```
+
+Ordenando de maneira decrescente os dados apresentados no gráfico acima, temos que os 3 meses mais quentes são: Março(3), Fevereiro(2) e Dezembro(12).  
+
+```{r}
+head(df.mean.temp.month, 3)
+
+```
+
+Enquanto que os meses mais frios são: Julho(7), Agosto(8) e Junho(6)
+
+```{r}
+tail(df.mean.temp.month, 3)
+```
 
 ### Qual foi o São João  mais frio de CG que está nos nossos dados?
 
