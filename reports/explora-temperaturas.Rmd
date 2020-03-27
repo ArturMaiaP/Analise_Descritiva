@@ -11,6 +11,7 @@ library(tidyverse)
 library(here)
 library(lubridate)
 library(ggbeeswarm)
+library(ggplot2)
 theme_set(theme_bw())
 ```
 
@@ -25,6 +26,50 @@ glimpse(climas)
 
 ### Onde é mais quente?
 
+Para responder esta questão iremos considerar a média anual de temperatura de cada cidade com base, a priori, na variável tmedia. Sendo assim, temos: 
+
+```{r}
+#descobrir quantas cidades diferentes estão presentes na base de dados. 
+unique(climas$cidade)
+
+#separar a base de acordo com as duas cidades.
+cg = climas %>% filter(cidade == "Campina Grande")
+jp = climas %>% filter(cidade == "João Pessoa")
+
+```
+
+```{r}
+#Verificar quantidade de amostras para cada ano
+unique(cg$ano)
+unique(jp$ano)
+
+climas %>% group_by(cidade) %>% filter(ano ==1992) %>%count(cidade)
+
+```
+
+Como não há registros da temperatura de Campina Grande entre os anos de 1987 e 1991, e há apenas 1 registro do ano de 1992, para está questão vamos considerar apenas registros do ano 1993 em diante.
+
+```{r}
+#computar média de temperatura anual de cada cidade
+
+df.mean.temp = climas %>%  filter(ano >=1993) %>% group_by(cidade,ano) %>% 
+    summarise(temperatura.media = mean(tmedia))
+
+head(df.mean.temp)
+tail(df.mean.temp)
+
+#Plotar gráfico de barra comparando média de temperatura ano a ano de cada cidade
+ggplot(df.mean.temp, aes(x=ano, y=temperatura.media, fill=cidade)) +
+  geom_bar(stat="identity", color="white", position = "dodge")+
+    theme_light()
+
+ggsave("temp_media_anual_cg_jp.png")
+
+
+
+```
+
+Sendo assim, com base no gráfico de temperatura média anual de cada cidade plotado acima, podemos concluir que, a partir de 1993, João Pessoa vem apresentando uma temperatura anual mais elevada que Campina Grande. 
 
 ### As temperaturas máximas semanais (o pico do calor) são tão diferentes quanto as médias? Mais?  
 
