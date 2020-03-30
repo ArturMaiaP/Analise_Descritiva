@@ -128,6 +128,11 @@ tail(df.mean.temp.month, 3)
 
 ### Qual foi o São João  mais frio de CG que está nos nossos dados?
 
+Tendo que o São João ocorre no dia 24/06 e que a data da amostras corresponde a semana que passou, por exemplo, 10/01/1993 corresponde ao período 04/01 até 10/01 (intervalo=(D1,D2]),para responder essa pergunta vamos considerar todos os registros entre os dia 17/06 até 23/06
+
+```{r}
+climas %>% select(semana)
+```
 
 
 ## Chuva
@@ -152,7 +157,7 @@ ggplot(df.mean.chuva, aes(x=cidade, y=media.chuva)) +
 
 De acordo com o gráfico apresentado acima, temos que, considerando um período anual, Campina Grande apresenta uma média de 14mm de chuva semanalmente, enquanto que João Pessoa tem em média 32,65mm de chuva por semana. 
 
-#Como é a distribuição do volume de chuvas por semana em JP e CG? A chuva varia mais ou menos que a temperatura? O formato da distribuição é igual?
+### Como é a distribuição do volume de chuvas por semana em JP e CG? A chuva varia mais ou menos que a temperatura? O formato da distribuição é igual?
 
 Para entender a distribuição do volume de chuvas de cada cidade, primeiro é preciso tratar os dados disponíveis. Sendo assim:
 
@@ -178,15 +183,17 @@ Considerando a metade do valor máximo (175,5) como valor de corte, vamos exclui
 climas.corte = climas %>% filter(chuva <=175) 
 
 #tamanho da barra correspondente a média das amostras
-ggplot(climas.corte, aes(x = chuva, color=cidade),alpha = 0.4, position = "identity")+
-    geom_histogram(binwidth =24)+
-    scale_fill_manual(values = c("steelblue", "steelred")) +
-    scale_color_manual(values = c("steelblue", "yellow"))
+ggplot(climas.corte, aes(x = chuva, fill=cidade))+
+    geom_histogram(binwidth =24, alpha =0.7, color = "steelblue", position = "identity")+
+    scale_fill_brewer(palette="Set2")
+    #scale_fill_manual(values=c("#999999", "#E69F00"))
 ```
 
-Com base no histograma apresentado acima, podemos perceber que ambas as cidades apresentam uma distribuição de volume de chuvas semelhantes, sendo unimodal e assimétrica a direita.
+Com base no histograma apresentado acima, podemos perceber que ambas as cidades apresentam uma distribuição de volume de chuvas semanal semelhantes, sendo unimodal e assimétrica a direita.
 
 ### No geral, onde chove mais?
+Com base nas análises feitas anteriormente, média do volume de chuva semanal e distribuição do volume de chuva, podemos concluir que em João Pessoa(JP) chove mais que em Campinha grande(CG), pois JP apresentou uma média de chuva semana superior a CG, 32,65mm contra 14mm. Além disso, com base no histograma de distribuição de volume de chuva, podemos perceber que quanto maior o volume de chuva, maior é a quantidade de amostras registradas na cidade de JP.
+
 
 ### A distribuição é diferente em meses específicos? 
 
