@@ -12,6 +12,8 @@ library(here)
 library(lubridate)
 library(ggbeeswarm)
 library(ggplot2)
+library(dplyr)
+library(tidyr)
 theme_set(theme_bw())
 ```
 
@@ -73,6 +75,23 @@ Sendo assim, com base no gráfico de temperatura média anual de cada cidade plo
 
 ### As temperaturas máximas semanais (o pico do calor) são tão diferentes quanto as médias? Mais?  
 
+Para melhor entender a diferença entre essas duas métricas, vamos plotar a distribuição de seus valores.
+
+A seguir temos um histograma representando as medições de temperatuda média.
+
+```{r}
+ggplot(climas, aes(x = tmedia)) +geom_histogram(binwidth = 0.8,color= "white", fill = "steelblue")
+```
+
+Enquanto que o próximo histograma representa a distribuição da temperatura máxima.
+```{r}
+ggplot(climas, aes(x = tmax)) +geom_histogram(binwidth = 0.8,color= "white", fill = "steelblue")
+
+
+```
+
+Com base nos histogramas, podemos concluir que as variáveis tmedia e tmax diferem nos valores das medições, onde a temperatura máxima registrou uma certa quantidade de valores mais elevados, porém em termos de distribuição, os dois casos apresentaram uma distribuição unimodal e assimétrica a esquerda.
+
 
 ### Quais os meses mais quentes e mais frios? 
 Para responder esta questão, iremos novamente considerar a média da variável tmedia, porém desta vez não faremos distinção entre as cidades, agrupando os dados apenas pelos meses. Sendo assim, temos:
@@ -115,7 +134,57 @@ tail(df.mean.temp.month, 3)
 
 ### Quanto chove por semana em JP e CG?
 
-Como é a distribuição do volume de chuvas por semana em JP e CG? A chuva varia mais ou menos que a temperatura? O formato da distribuição é igual? 
+Para responder está pergunta vamos calcular a média da quantidade de chuva semanal de cada cidade.
+
+```{r}
+
+#média da coluna chuva agrupada para cidade
+df.mean.chuva = climas %>% group_by(cidade) %>% 
+    summarise(media.chuva = mean(chuva))
+
+ggplot(df.mean.chuva, aes(x=cidade, y=media.chuva)) +
+  geom_bar(stat="identity", fill="steelblue",color="white", width = 0.8)+
+    theme_gray()+
+    geom_text(aes(label=round(media.chuva,digits = 2)), vjust=-0.6, color="black", size=3)
+    
+
+```
+
+De acordo com o gráfico apresentado acima, temos que, considerando um período anual, Campina Grande apresenta uma média de 14mm de chuva semanalmente, enquanto que João Pessoa tem em média 32,65mm de chuva por semana. 
+
+#Como é a distribuição do volume de chuvas por semana em JP e CG? A chuva varia mais ou menos que a temperatura? O formato da distribuição é igual?
+
+Para entender a distribuição do volume de chuvas de cada cidade, primeiro é preciso tratar os dados disponíveis. Sendo assim:
+
+```{r}
+climas %>% select(,chuva) %>% summary()
+
+```
+
+Analisando o 3º quartil e o valor máximo, podemos perceber que existem outliers nos dados, então vamos analisar a quantidade de amostras com um valor muito acima da média para saber se podemos excluí-los sem resultar em uma grande perda de dados.
+
+```{r}
+climas %>% filter( chuva >=300) %>% nrow()
+climas %>% filter( chuva >=200) %>% nrow()
+climas %>% filter( chuva >=175) %>% nrow() #max/2
+climas %>% nrow()
+
+```
+
+Considerando a metade do valor máximo (175,5) como valor de corte, vamos excluir da análise 28 amostras, o que corresponde a aprximadamente 1% dos dados. Então, temos o seguinte histograma:
+
+```{r}
+
+climas.corte = climas %>% filter(chuva <=175) 
+
+#tamanho da barra correspondente a média das amostras
+ggplot(climas.corte, aes(x = chuva, color=cidade),alpha = 0.4, position = "identity")+
+    geom_histogram(binwidth =24)+
+    scale_fill_manual(values = c("steelblue", "steelred")) +
+    scale_color_manual(values = c("steelblue", "yellow"))
+```
+
+Com base no histograma apresentado acima, podemos perceber que ambas as cidades apresentam uma distribuição de volume de chuvas semelhantes, sendo unimodal e assimétrica a direita.
 
 ### No geral, onde chove mais?
 
