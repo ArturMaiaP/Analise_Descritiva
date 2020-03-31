@@ -128,10 +128,31 @@ tail(df.mean.temp.month, 3)
 
 ### Qual foi o São João  mais frio de CG que está nos nossos dados?
 
-Tendo que o São João ocorre no dia 24/06 e que a data da amostras corresponde a semana que passou, por exemplo, 10/01/1993 corresponde ao período 04/01 até 10/01 (intervalo=(D1,D2]),para responder essa pergunta vamos considerar todos os registros entre os dia 17/06 até 23/06
+Tendo que o São João ocorre no dia 24/06 e que a data da amostras corresponde a semana que passou (último dia), por exemplo, 10/01/1993 corresponde ao período 04/01 até 10/01 (intervalo=(D1,D2]),para responder essa pergunta vamos considerar todos os registros entre os dia 24/06 até 30/06.
 
 ```{r}
-climas %>% select(semana)
+#climas
+saoJoao = climas %>% filter(month(semana) == 6) %>% 
+  filter(day(semana)>=24 & day(semana)<=30) %>%
+  filter(cidade =="Campina Grande")
+
+saoJoao
+
+```
+
+
+Sendo assim, como base na temperatura média semanal, temos que o São João mais frio de Campina Grande, foi registrado entre os dias 29 e 23 de Junho de 2008, tendo uma temperatura média de 21,34ºC, como podemos ver na seleção abaixo.
+
+```{r}
+saoJoao %>% arrange(tmedia) %>% head(1)
+
+```
+
+Por outro lado, considerando o pico mínimo de temperatuda, temos que a temperatura mais baixa do São João de Campina Grande foi 16,1ºC, sendo registrada entre os dias 29 e 23 de Junho de 2003. 
+
+```{r}
+saoJoao %>% arrange(tmin) %>% head(1)
+
 ```
 
 
@@ -159,7 +180,7 @@ De acordo com o gráfico apresentado acima, temos que, considerando um período 
 
 ### Como é a distribuição do volume de chuvas por semana em JP e CG? A chuva varia mais ou menos que a temperatura? O formato da distribuição é igual?
 
-Para entender a distribuição do volume de chuvas de cada cidade, primeiro é preciso tratar os dados disponíveis. Sendo assim:
+Para entender a distribuição do volume de chuva de cada cidade, primeiro é preciso tratar os dados disponíveis. Sendo assim:
 
 ```{r}
 climas %>% select(,chuva) %>% summary()
@@ -189,11 +210,31 @@ ggplot(climas.corte, aes(x = chuva, fill=cidade))+
     #scale_fill_manual(values=c("#999999", "#E69F00"))
 ```
 
-Com base no histograma apresentado acima, podemos perceber que ambas as cidades apresentam uma distribuição de volume de chuvas semanal semelhantes, sendo unimodal e assimétrica a direita.
+Com base no histograma apresentado acima, podemos perceber que ambas as cidades apresentam uma distribuição de volume de chuva semanal semelhantes, sendo unimodal e assimétrica a direita.
+
+Comparando as ditribuições de temperatura(plotado anteriormente) e do volume de chuva, ambos os casos possuem uma distribuição unimodal(apenas um pico), sendo a dist. de temperatura assimétrica a esquerda e a dist. do volume de chuva assimétrico a direita. 
+
+Para concluir qual destas variáveis (temperatura média e volume de chuva) apresentam uma maior variação, independente da cidade, vamos calcular seus respectivos desvio padrão, então:
+
+1. Desvio padrão temperatura média:
+```{r}
+climas %>% summarise( sd.tmedia = sd(tmedia)) %>% unlist(use.names = FALSE)
+
+```
+
+2. Desvio padrão volume de chuva:
+
+```{r}
+climas %>% summarise( sd.chuvas = sd(chuva)) %>% unlist(use.names = FALSE)
+
+```
+
+Sendo assim, temos que o volume de chuva varia muito mais que a temperatura média.
+
 
 ### No geral, onde chove mais?
 Com base nas análises feitas anteriormente, média do volume de chuva semanal e distribuição do volume de chuva, podemos concluir que em João Pessoa(JP) chove mais que em Campinha grande(CG), pois JP apresentou uma média de chuva semana superior a CG, 32,65mm contra 14mm. Além disso, com base no histograma de distribuição de volume de chuva, podemos perceber que quanto maior o volume de chuva, maior é a quantidade de amostras registradas na cidade de JP.
 
 
 ### A distribuição é diferente em meses específicos? 
-
+Selecionando um mês de cada estação obeservamos a seguinte distribuição:
