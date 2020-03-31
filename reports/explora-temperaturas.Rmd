@@ -207,7 +207,7 @@ climas.corte = climas %>% filter(chuva <=175)
 ggplot(climas.corte, aes(x = chuva, fill=cidade))+
     geom_histogram(binwidth =24, alpha =0.7, color = "steelblue", position = "identity")+
     scale_fill_brewer(palette="Set2")
-    #scale_fill_manual(values=c("#999999", "#E69F00"))
+   
 ```
 
 Com base no histograma apresentado acima, podemos perceber que ambas as cidades apresentam uma distribuição de volume de chuva semanal semelhantes, sendo unimodal e assimétrica a direita.
@@ -229,7 +229,7 @@ climas %>% summarise( sd.chuvas = sd(chuva)) %>% unlist(use.names = FALSE)
 
 ```
 
-Sendo assim, temos que o volume de chuva varia muito mais que a temperatura média.
+Sendo assim, temos que o volume de chuva apresenta uma variação muito maior que a temperatura média.
 
 
 ### No geral, onde chove mais?
@@ -238,3 +238,52 @@ Com base nas análises feitas anteriormente, média do volume de chuva semanal e
 
 ### A distribuição é diferente em meses específicos? 
 Selecionando um mês de cada estação obeservamos a seguinte distribuição:
+
+1. Janeiro (verão):
+
+```{r}
+jan = climas %>% filter(mes == 1)
+
+head(jan)
+
+
+ggplot(jan, aes(x = chuva, fill=cidade))+
+    geom_histogram(binwidth =15, alpha =0.7, color = "steelblue", position = "identity")+
+    scale_fill_brewer(palette="Set2")
+```
+
+1. Abril (outono):
+
+```{r}
+abril = climas %>% filter(mes == 4)
+
+head(abril)
+
+ggplot(abril, aes(x = chuva, fill=cidade))+
+    geom_histogram(binwidth =15, alpha =0.7, color = "steelblue", position = "identity")+
+    scale_fill_brewer(palette="Set2")
+```
+
+1. Julho (inverno):
+
+```{r}
+jul = climas %>% filter(mes == 7)
+
+
+ggplot(jul, aes(x = chuva, fill=cidade))+
+    geom_histogram(binwidth =15, alpha =0.7, color = "steelblue", position = "identity")+
+    scale_fill_brewer(palette="Set2")
+```
+
+1. Outubro (primavera):
+
+```{r}
+outb = climas %>% filter(mes == 10)
+
+ggplot(climas.corte, aes(x = chuva, fill=cidade))+
+    geom_histogram(binwidth =15, alpha =0.7, color = "steelblue", position = "identity")+
+    scale_fill_brewer(palette="Set2")
+```
+
+
+Sendo assim, considerando que os meses de uma determinada estação possuem as mesmas características climáticas, analisando um mês arbitrário de cada estação do ano, podemos afirmar que a distribuição do volume de chuva mês a mês segue o mesmo padrão da distribuição anual, sendo unimodal e assimétrica a direita
