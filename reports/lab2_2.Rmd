@@ -26,9 +26,55 @@ glimpse(climas)
 
 ## Chuva
 
+Review: Não há uma quantificação geral da quantidade de chuva para cada cidade (total, média, etc) e a quantidade de semanas de chuva não é considerada na análise. Isso pode afetar a análise sobre frequência e volume de chuva. Não há visualizações.
+
 ### No geral, onde chove mais?
-Com base nas análises feitas anteriormente, média do volume de chuva semanal e distribuição do volume de chuva, podemos concluir que em João Pessoa(JP) chove mais que em Campinha grande(CG), pois JP apresentou uma média de chuva semana superior a CG, 32,65mm contra 14mm. Além disso, com base no histograma de distribuição de volume de chuva, podemos perceber que quanto maior o volume de chuva, maior é a quantidade de amostras registradas na cidade de JP.
+
+Para a cidade de João Pessoa temos as seguintes informações:
 
 ```{r}
-
+climas %>% filter(cidade == "João Pessoa") %>% select(chuva)%>% summary()
 ```
+
+Volume de chuva total registrado para João Pessoa: 
+```{r}
+climas %>% filter(cidade == "João Pessoa") %>% select(chuva)%>% sum()
+```
+
+Para a cidade de Campina Grande temos:
+
+```{r}
+climas %>% filter(cidade == "Campina Grande") %>% select(chuva)%>% summary()
+```
+
+Volume de chuva total registrado para Campina Grande: 
+```{r}
+climas %>% filter(cidade == "Campina Grande") %>% select(chuva)%>% sum()
+```
+
+Sendo assim, com base nas amostras coletadas, podemos perceber que João Pessoa registrou um total de 49.756mm³ de chuva, enquanto que Campina Grande registrou apenas 17.133mm³. João Pessoa também apresentou uma média semanal de chuva superior sendo 32,65mm³ contra 14mm³ de Campina Grande. O mesmo aconteceu para mediana e intervalo interquartil como podemos ver no gráfico de distribuição apresentado a seguir: 
+
+``` {r}
+
+climas %>% ggplot( aes(x=cidade, y=chuva)) +
+    geom_boxplot(width = .3)+
+    scale_y_continuous(name = "Volume de chuva semanal",
+                           breaks = seq(0, 175, 25),
+                           limits=c(0, 175))
+```
+
+O eixo y foi limitado a metade do valor máximo registrado(351) para facilitar a visualização, removendo alguns outliers. Analisando o boxplot da distribuição do volume de chuva semanal, podemos perceber que a cidade de João Pessoa apresentou mediana, intevalo interquartil e range superiores a Campina Grande.
+
+Então, de acordo com as métricas discutidas, podemos concluir que chove mais na cidade de João Pessoa.
+
+
+## Temperatura
+
+### Qual cidade apresentou o São João mais quente?
+
+Review similar: Para esses dados é seguro usar a média e o mínimo? Outra métrica poderia ser usada? Qual é a variação da média para cada ano?  
+
+
+## Correlação
+
+### Existe alguma relação entre o volume de chuvas e a temperatura?
