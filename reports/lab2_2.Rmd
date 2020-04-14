@@ -1,0 +1,34 @@
+---
+title: "Temperatura JP x CG"
+output:
+    html_document:
+    df_print: paged
+theme: sandstone
+---
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(here)
+library(lubridate)
+library(ggbeeswarm)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+theme_set(theme_bw())
+```
+
+```{r read}
+climas = read_csv(here::here("data/clima_cg_jp-semanal.csv"), 
+                  col_types = "cTdddddd")
+
+glimpse(climas)
+```
+
+## Chuva
+
+### No geral, onde chove mais?
+Com base nas análises feitas anteriormente, média do volume de chuva semanal e distribuição do volume de chuva, podemos concluir que em João Pessoa(JP) chove mais que em Campinha grande(CG), pois JP apresentou uma média de chuva semana superior a CG, 32,65mm contra 14mm. Além disso, com base no histograma de distribuição de volume de chuva, podemos perceber que quanto maior o volume de chuva, maior é a quantidade de amostras registradas na cidade de JP.
+
+```{r}
+
+```
