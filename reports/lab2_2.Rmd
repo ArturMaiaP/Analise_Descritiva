@@ -15,6 +15,7 @@ library(ggplot2)
 library(dplyr)
 library(tidyr)
 library(rafalib)
+library(BBmisc)
 theme_set(theme_bw())
 ```
 
@@ -29,7 +30,7 @@ glimpse(climas)
 
 Review: Não há uma quantificação geral da quantidade de chuva para cada cidade (total, média, etc) e a quantidade de semanas de chuva não é considerada na análise. Isso pode afetar a análise sobre frequência e volume de chuva. Não há visualizações.
 
-### No geral, onde chove mais?
+### Q1: No geral, onde chove mais?
 
 Para a cidade de João Pessoa temos as seguintes informações:
 
@@ -71,7 +72,7 @@ Então, de acordo com as métricas discutidas, podemos concluir que chove mais n
 
 ## Temperatura
 
-### Qual cidade apresentou o São João mais quente e qual ano?
+### Q2: Qual cidade apresentou o São João mais quente e qual ano?
 
 Review similar: Para esses dados é seguro usar a média e o mínimo? Outra métrica poderia ser usada? Qual é a variação da média para cada ano?
 
@@ -133,4 +134,31 @@ Sendo assim, considerando que o ano de 1990 e 1998 apresentaram temperatura méd
 
 ## Correlação
 
-### Existe alguma relação entre o volume de chuvas e a temperatura?
+### Q3: Existe alguma relação entre o volume de chuvas e a temperatura média semanal de cada cidade?
+
+Existem 3 possibilidades de relação entre essas duas variáveis:
+i) o volume de chuva aumenta se a temperatura aumenta (correlação linear crescente);
+ii) o volume de chuva aumenta se a temperatura diminui (correlação linear decrescente);
+iii) não há relação. As variáveis são independentes.
+
+Sendo assim, precisamos realizar uma análise de correlação entre essas duas variáveis. Como apresentado no boxplot em Q1, as medições de volume de chuva apresentam uma boa quantidade de outliers para ambas cidades, então para este caso, vamos desconsiderar o coeficiente de correlação de Pearson, concentrando nossa análise nos coeficientes de Spearman e Kendall.
+
+Correlação Campina Grande:
+```{r}
+climas %>% filter(cidade == "Campina Grande")%>% 
+  summarise(spearman = cor(chuva, tmedia,  method = "spearman"), 
+                kendall = cor(chuva,tmedia, method = "kendall"))
+
+```
+
+Para a cidade de Campina Grande, de acordo com o coeficiente de Spearman, o volume de chuva e a temperatura semanal média apresentam uma relação moderada decrescente, isto é, quando maior o volume de chuva, menor é a temperatura. Porém, com base de coeficiente de Kendall, há apenas uma relação fraca entre as duas variáveis. 
+
+Correlação João Pessoa:
+```{r}
+climas %>% filter(cidade == "João Pessoa") %>% 
+  summarise(spearman = cor(tmedia, chuva, method = "spearman"), 
+            kendall = cor(tmedia,chuva, method = "kendall"))
+
+```
+Para a cidade de João Pessoa, tanto para o coeficiente de Spearman, quanto para Kendall, o volume de chuva e a temperatura semanal média apresentam uma relação fraca decrescente. 
+
