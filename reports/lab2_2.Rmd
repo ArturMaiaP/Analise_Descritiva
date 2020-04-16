@@ -14,6 +14,7 @@ library(ggbeeswarm)
 library(ggplot2)
 library(dplyr)
 library(tidyr)
+library(rafalib)
 theme_set(theme_bw())
 ```
 
@@ -70,9 +71,64 @@ Então, de acordo com as métricas discutidas, podemos concluir que chove mais n
 
 ## Temperatura
 
-### Qual cidade apresentou o São João mais quente?
+### Qual cidade apresentou o São João mais quente e qual ano?
 
-Review similar: Para esses dados é seguro usar a média e o mínimo? Outra métrica poderia ser usada? Qual é a variação da média para cada ano?  
+Review similar: Para esses dados é seguro usar a média e o mínimo? Outra métrica poderia ser usada? Qual é a variação da média para cada ano?
+
+Como não temos medições exatas de dia a dia, tendo que o São João ocorre no dia 24/06 e que a data da amostras corresponde a semana que passou (último dia), por exemplo, 10/01/1993 corresponde ao período 04/01 até 10/01 (intervalo=(D1,D2]),para responder essa pergunta vamos considerar todos os registros entre os dia 24/06 até 30/06.
+
+
+```{r}
+#climas
+saoJoao = climas %>% filter(month(semana) == 6) %>% 
+  filter(day(semana)>=24 & day(semana)<=30)
+
+saoJoao
+
+```
+
+Considerando o registro da temperatura média semanal geral por cidade, temos:
+
+```{r}
+sjCG = saoJoao %>% filter(cidade == "Campina Grande") %>% arrange(-tmedia)
+sjCG  %>% head(5)
+```
+
+```{r}
+sjJB = saoJoao %>% filter(cidade == "João Pessoa") %>% arrange(-tmedia)
+sjJB %>% head(5)
+```
+
+Observando que o top-5 da cidade de João Pessoa apresentou entre 26ºC e 27ºC contra 22º-24º de Campina Grande, vamos descartar as amostras de Campina Grande, concluindo que o top-5 de João Pessoa já supera o São João mais quente de Campina Grande.
+
+
+Em seguida, considerando a variação da temperatura média semanal para o mês de junho, para cada ano do top-5 de João Pessoa, temos:
+
+```{r}
+top5sj = sjJB %>% arrange(-tmedia) %>% head(5) %>% select(ano) %>% unlist()
+
+dp = climas %>% filter(mes == 6 & cidade == "João Pessoa") %>%
+    group_by(ano) %>% summarise(desvio_padrao = popsd(tmedia)) %>% filter(ano %in% top5sj)
+dp
+
+```
+O ano de 1988 não apresentou nenhuma variação pois apresenta apenas 1 registro para o mês de Junho, sendo assim, iremos desconsiderá-lo para a análise.
+
+```{r}
+#Provar e remover o ano de 1988
+climas %>% filter(mes == 6 & ano == 1988 & cidade == "João Pessoa")
+
+
+```
+
+```{r}
+semanaSJ = sjJB %>% arrange(-tmedia) %>% head(5) %>% select(cidade,semana,tmedia,ano)
+
+semanaSJ %>% merge(dp,by = "ano") %>% arrange(-tmedia, desvio_padrao) %>% na.omit()
+
+```
+
+Sendo assim, considerando que o ano de 1990 e 1998 apresentaram temperatura média igual na semana do São João, 27ºC, por apresentar a menor variação na média de temperatura para o mês de Junho, podemos concluir que João Pessoa apresentou o São João mais quente, entre as duas cidades, no ano de 1998. 
 
 
 ## Correlação

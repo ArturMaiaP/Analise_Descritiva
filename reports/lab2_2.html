@@ -423,9 +423,81 @@ glimpse(climas)</code></pre>
 </div>
 <div id="temperatura" class="section level2">
 <h2>Temperatura</h2>
-<div id="qual-cidade-apresentou-o-são-joão-mais-quente" class="section level3">
-<h3>Qual cidade apresentou o São João mais quente?</h3>
+<div id="qual-cidade-apresentou-o-são-joão-mais-quente-e-qual-ano" class="section level3">
+<h3>Qual cidade apresentou o São João mais quente e qual ano?</h3>
 <p>Review similar: Para esses dados é seguro usar a média e o mínimo? Outra métrica poderia ser usada? Qual é a variação da média para cada ano?</p>
+<p>Como não temos medições exatas de dia a dia, tendo que o São João ocorre no dia 24/06 e que a data da amostras corresponde a semana que passou (último dia), por exemplo, 10/01/1993 corresponde ao período 04/01 até 10/01 (intervalo=(D1,D2]),para responder essa pergunta vamos considerar todos os registros entre os dia 24/06 até 30/06.</p>
+<pre class="r"><code>#climas
+saoJoao = climas %&gt;% filter(month(semana) == 6) %&gt;% 
+  filter(day(semana)&gt;=24 &amp; day(semana)&lt;=30)
+
+saoJoao</code></pre>
+<pre><code>## # A tibble: 52 x 8
+##    cidade         semana              tmedia  tmax  tmin chuva   mes   ano
+##    &lt;chr&gt;          &lt;dttm&gt;               &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 Campina Grande 1995-06-25 00:00:00   21.9  27.5  18.2  67.7     6  1995
+##  2 Campina Grande 1996-06-30 00:00:00   22.2  27.2  16.7   6.8     6  1996
+##  3 Campina Grande 1997-06-29 00:00:00   22.3  27    17.9  44.2     6  1997
+##  4 Campina Grande 1998-06-28 00:00:00   24.3  28.9  17.8   0.3     6  1998
+##  5 Campina Grande 1999-06-27 00:00:00   23.0  27.7  17.3  18.1     6  1999
+##  6 Campina Grande 2002-06-30 00:00:00   21.6  26.7  17.1  25.1     6  2002
+##  7 Campina Grande 2003-06-29 00:00:00   22.2  27.2  16.1  20       6  2003
+##  8 Campina Grande 2004-06-27 00:00:00   21.8  26.4  17.4  31.4     6  2004
+##  9 Campina Grande 2005-06-26 00:00:00   22.0  27    17.4  31.2     6  2005
+## 10 Campina Grande 2006-06-25 00:00:00   22.2  26.9  18.5  39.8     6  2006
+## # ... with 42 more rows</code></pre>
+<p>Considerando o registro da temperatura média semanal geral por cidade, temos:</p>
+<pre class="r"><code>sjCG = saoJoao %&gt;% filter(cidade == &quot;Campina Grande&quot;) %&gt;% arrange(-tmedia)
+sjCG  %&gt;% head(5)</code></pre>
+<pre><code>## # A tibble: 5 x 8
+##   cidade         semana              tmedia  tmax  tmin chuva   mes   ano
+##   &lt;chr&gt;          &lt;dttm&gt;               &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 Campina Grande 1998-06-28 00:00:00   24.3  28.9  17.8   0.3     6  1998
+## 2 Campina Grande 2014-06-29 00:00:00   23.1  27.7  17.1  10.4     6  2014
+## 3 Campina Grande 1999-06-27 00:00:00   23.0  27.7  17.3  18.1     6  1999
+## 4 Campina Grande 2016-06-26 00:00:00   22.9  28.2  17.4   4.6     6  2016
+## 5 Campina Grande 2009-06-28 00:00:00   22.7  27.3  18.1  45.6     6  2009</code></pre>
+<pre class="r"><code>sjJB = saoJoao %&gt;% filter(cidade == &quot;João Pessoa&quot;) %&gt;% arrange(-tmedia)
+sjJB %&gt;% head(5)</code></pre>
+<pre><code>## # A tibble: 5 x 8
+##   cidade      semana              tmedia  tmax  tmin chuva   mes   ano
+##   &lt;chr&gt;       &lt;dttm&gt;               &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 João Pessoa 1990-06-24 00:00:00   27.3  29.7  19.5  64.6     6  1990
+## 2 João Pessoa 1988-06-26 00:00:00   27.2  29.9  21.2   1.8     6  1988
+## 3 João Pessoa 1998-06-28 00:00:00   27.1  30    21.8   5.6     6  1998
+## 4 João Pessoa 2010-06-27 00:00:00   26.9  30.6  17.6  15.9     6  2010
+## 5 João Pessoa 1993-06-27 00:00:00   26.8  29.4  21.6   0       6  1993</code></pre>
+<p>Observando que o top-5 da cidade de João Pessoa apresentou entre 26ºC e 27ºC contra 22º-24º de Campina Grande, vamos descartar as amostras de Campina Grande, concluindo que o top-5 de João Pessoa já supera o São João mais quente de Campina Grande.</p>
+<p>Em seguida, considerando a variação da temperatura média semanal para o mês de junho, para cada ano do top-5 de João Pessoa, temos:</p>
+<pre class="r"><code>top5sj = sjJB %&gt;% arrange(-tmedia) %&gt;% head(5) %&gt;% select(ano) %&gt;% unlist()
+
+dp = climas %&gt;% filter(mes == 6 &amp; cidade == &quot;João Pessoa&quot;) %&gt;%
+    group_by(ano) %&gt;% summarise(desvio_padrao = popsd(tmedia)) %&gt;% filter(ano %in% top5sj)
+dp</code></pre>
+<pre><code>## # A tibble: 5 x 2
+##     ano desvio_padrao
+##   &lt;dbl&gt;         &lt;dbl&gt;
+## 1  1988        NA    
+## 2  1990         0.472
+## 3  1993         0.434
+## 4  1998         0.274
+## 5  2010         0.999</code></pre>
+<p>O ano de 1988 não apresentou nenhuma variação pois apresenta apenas 1 registro para o mês de Junho, sendo assim, iremos desconsiderá-lo para a análise.</p>
+<pre class="r"><code>#Provar e remover o ano de 1988
+climas %&gt;% filter(mes == 6 &amp; ano == 1988 &amp; cidade == &quot;João Pessoa&quot;)</code></pre>
+<pre><code>## # A tibble: 1 x 8
+##   cidade      semana              tmedia  tmax  tmin chuva   mes   ano
+##   &lt;chr&gt;       &lt;dttm&gt;               &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 João Pessoa 1988-06-26 00:00:00   27.2  29.9  21.2   1.8     6  1988</code></pre>
+<pre class="r"><code>semanaSJ = sjJB %&gt;% arrange(-tmedia) %&gt;% head(5) %&gt;% select(cidade,semana,tmedia,ano)
+
+semanaSJ %&gt;% merge(dp,by = &quot;ano&quot;) %&gt;% arrange(-tmedia, desvio_padrao) %&gt;% na.omit()</code></pre>
+<pre><code>##    ano      cidade     semana   tmedia desvio_padrao
+## 1 1990 João Pessoa 1990-06-24 27.25714     0.4721375
+## 3 1998 João Pessoa 1998-06-28 27.10952     0.2738923
+## 4 2010 João Pessoa 2010-06-27 26.88571     0.9991313
+## 5 1993 João Pessoa 1993-06-27 26.78889     0.4343226</code></pre>
+<p>Sendo assim, considerando que o ano de 1990 e 1998 apresentaram temperatura média igual na semana do São João, 27ºC, por apresentar a menor variação na média de temperatura para o mês de Junho, podemos concluir que João Pessoa apresentou o São João mais quente, entre as duas cidades, no ano de 1998.</p>
 </div>
 </div>
 <div id="correlação" class="section level2">
