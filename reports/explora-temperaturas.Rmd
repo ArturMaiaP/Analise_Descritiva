@@ -97,19 +97,22 @@ Com base nos histogramas, podemos concluir que as variáveis tmedia e tmax difer
 Para responder esta questão, iremos novamente considerar a média da variável tmedia, porém desta vez não faremos distinção entre as cidades, agrupando os dados apenas pelos meses. Sendo assim, temos:
 
 ```{r}
-
+meses = c("Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez")
 # Calcular e ordenar temperatura média por mês
-df.mean.temp.month = climas %>% group_by(mes) %>% summarise(tmedia.mes = mean(tmedia)) %>% arrange(desc(tmedia.mes))
+df.mean.temp.month = climas %>% group_by(mes) %>% summarise(tmedia.mes = mean(tmedia)) %>% arrange(mes)
 
 #plotar média bar chart
 
-ggplot(df.mean.temp.month, aes(x=mes, y=tmedia.mes)) +
-  geom_bar(stat="identity", color="black", fill = "steelblue", position = "dodge", width = 0.5)+
-    theme_gray()+
-    geom_text(aes(label=round(tmedia.mes,digits = 2)), vjust=-0.6, color="black", size=3)+
+ggplot(df.mean.temp.month, aes(y=mes, x=tmedia.mes)) +
+  geom_bar(stat="identity", color="black", fill = "lightblue", position = "dodge", width = 0.5)+
+    theme_classic()+
+    theme( panel.grid.major = element_blank(),panel.grid.minor = element_blank())+
+    scale_x_continuous(name = "Média da Temperatura por Semana", breaks = NULL,limits = c(0,30)) +
+    scale_y_continuous(name="Meses", labels = meses, breaks = seq(1,12))+
+    geom_text(aes(label=round(tmedia.mes,digits = 2)),vjust = 0.4,hjust=-0.2, color="black", size=3)+
     
 
-ggsave("temp_media_mes.png")
+ggsave("temp_media_mes.pdf",width = 6,height = 4)
 
 ```
 
@@ -206,7 +209,8 @@ climas.corte = climas %>% filter(chuva <=175)
 #tamanho da barra correspondente a média das amostras
 ggplot(climas.corte, aes(x = chuva, fill=cidade))+
     geom_histogram(binwidth =24, alpha =0.7, color = "steelblue", position = "identity")+
-    scale_fill_brewer(palette="Set2")
+    scale_fill_brewer(palette="Set2")+
+    theme_classic()
    
 ```
 
