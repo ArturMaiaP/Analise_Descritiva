@@ -1,0 +1,164 @@
+---
+title: "Temperatura JP x CG"
+output:
+    html_document:
+    df_print: paged
+theme: sandstone
+---
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(here)
+library(lubridate)
+library(ggbeeswarm)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(rafalib)
+library(BBmisc)
+theme_set(theme_bw())
+```
+
+```{r read}
+climas = read_csv(here::here("data/clima_cg_jp-semanal.csv"), 
+                  col_types = "cTdddddd")
+
+glimpse(climas)
+```
+
+## Chuva
+
+Review: Não há uma quantificação geral da quantidade de chuva para cada cidade (total, média, etc) e a quantidade de semanas de chuva não é considerada na análise. Isso pode afetar a análise sobre frequência e volume de chuva. Não há visualizações.
+
+### Q1: No geral, onde chove mais?
+
+Para a cidade de João Pessoa temos as seguintes informações:
+
+```{r}
+climas %>% filter(cidade == "João Pessoa") %>% select(chuva)%>% summary()
+```
+
+Volume de chuva total registrado para João Pessoa: 
+```{r}
+climas %>% filter(cidade == "João Pessoa") %>% select(chuva)%>% sum()
+```
+
+Para a cidade de Campina Grande temos:
+
+```{r}
+climas %>% filter(cidade == "Campina Grande") %>% select(chuva)%>% summary()
+```
+
+Volume de chuva total registrado para Campina Grande: 
+```{r}
+climas %>% filter(cidade == "Campina Grande") %>% select(chuva)%>% sum()
+```
+
+Sendo assim, com base nas amostras coletadas, podemos perceber que João Pessoa registrou um total de 49.756mm³ de chuva, enquanto que Campina Grande registrou apenas 17.133mm³. João Pessoa também apresentou uma média semanal de chuva superior sendo 32,65mm³ contra 14mm³ de Campina Grande. O mesmo aconteceu para mediana e intervalo interquartil como podemos ver no gráfico de distribuição apresentado a seguir: 
+
+``` {r}
+
+climas %>% ggplot( aes(x=cidade, y=chuva)) +
+    geom_boxplot(width = .3)+
+    scale_y_continuous(name = "Volume de chuva semanal",
+                           breaks = seq(0, 175, 25),
+                           limits=c(0, 175))
+```
+
+O eixo y foi limitado a metade do valor máximo registrado(351) para facilitar a visualização, removendo alguns outliers. Analisando o boxplot da distribuição do volume de chuva semanal, podemos perceber que a cidade de João Pessoa apresentou mediana, intevalo interquartil e range superiores a Campina Grande.
+
+Então, de acordo com as métricas discutidas, podemos concluir que chove mais na cidade de João Pessoa.
+
+
+## Temperatura
+
+### Q2: Qual cidade apresentou o São João mais quente e qual ano?
+
+Review similar: Para esses dados é seguro usar a média e o mínimo? Outra métrica poderia ser usada? Qual é a variação da média para cada ano?
+
+Como não temos medições exatas de dia a dia, tendo que o São João ocorre no dia 24/06 e que a data da amostras corresponde a semana que passou (último dia), por exemplo, 10/01/1993 corresponde ao período 04/01 até 10/01 (intervalo=(D1,D2]),para responder essa pergunta vamos considerar todos os registros entre os dia 24/06 até 30/06.
+
+
+```{r}
+#climas
+saoJoao = climas %>% filter(month(semana) == 6) %>% 
+  filter(day(semana)>=24 & day(semana)<=30)
+
+saoJoao
+
+```
+
+Considerando o registro da temperatura média semanal geral por cidade, temos:
+
+```{r}
+sjCG = saoJoao %>% filter(cidade == "Campina Grande") %>% arrange(-tmedia)
+sjCG  %>% head(5)
+```
+
+```{r}
+sjJB = saoJoao %>% filter(cidade == "João Pessoa") %>% arrange(-tmedia)
+sjJB %>% head(5)
+```
+
+Observando que o top-5 da cidade de João Pessoa apresentou entre 26ºC e 27ºC contra 22º-24º de Campina Grande, vamos descartar as amostras de Campina Grande, concluindo que o top-5 de João Pessoa já supera o São João mais quente de Campina Grande.
+
+
+Em seguida, considerando a variação da temperatura média semanal para o mês de junho, para cada ano do top-5 de João Pessoa, temos:
+
+```{r}
+top5sj = sjJB %>% arrange(-tmedia) %>% head(5) %>% select(ano) %>% unlist()
+
+dp = climas %>% filter(mes == 6 & cidade == "João Pessoa") %>%
+    group_by(ano) %>% summarise(desvio_padrao = popsd(tmedia)) %>% filter(ano %in% top5sj)
+dp
+
+```
+O ano de 1988 não apresentou nenhuma variação pois apresenta apenas 1 registro para o mês de Junho, sendo assim, iremos desconsiderá-lo para a análise.
+
+```{r}
+#Provar e remover o ano de 1988
+climas %>% filter(mes == 6 & ano == 1988 & cidade == "João Pessoa")
+
+
+```
+
+```{r}
+semanaSJ = sjJB %>% arrange(-tmedia) %>% head(5) %>% select(cidade,semana,tmedia,ano)
+
+semanaSJ %>% merge(dp,by = "ano") %>% arrange(-tmedia, desvio_padrao) %>% na.omit()
+
+```
+
+Sendo assim, considerando que o ano de 1990 e 1998 apresentaram temperatura média igual na semana do São João, 27ºC, por apresentar a menor variação na média de temperatura para o mês de Junho, podemos concluir que João Pessoa apresentou o São João mais quente, entre as duas cidades, no ano de 1998. 
+
+
+## Correlação
+
+### Q3: Existe alguma relação entre o volume de chuvas e a temperatura média semanal de cada cidade?
+
+Existem 3 possibilidades de relação entre essas duas variáveis:
+i) o volume de chuva aumenta se a temperatura aumenta (correlação linear crescente);
+ii) o volume de chuva aumenta se a temperatura diminui (correlação linear decrescente);
+iii) não há relação. As variáveis são independentes.
+
+Sendo assim, precisamos realizar uma análise de correlação entre essas duas variáveis. Como apresentado no boxplot em Q1, as medições de volume de chuva apresentam uma boa quantidade de outliers para ambas cidades, então para este caso, vamos desconsiderar o coeficiente de correlação de Pearson, concentrando nossa análise nos coeficientes de Spearman e Kendall.
+
+Correlação Campina Grande:
+```{r}
+climas %>% filter(cidade == "Campina Grande")%>% 
+  summarise(spearman = cor(chuva, tmedia,  method = "spearman"), 
+                kendall = cor(chuva,tmedia, method = "kendall"))
+
+```
+
+Para a cidade de Campina Grande, de acordo com o coeficiente de Spearman, o volume de chuva e a temperatura semanal média apresentam uma relação moderada decrescente, isto é, quando maior o volume de chuva, menor é a temperatura. Porém, com base de coeficiente de Kendall, há apenas uma relação fraca entre as duas variáveis. 
+
+Correlação João Pessoa:
+```{r}
+climas %>% filter(cidade == "João Pessoa") %>% 
+  summarise(spearman = cor(tmedia, chuva, method = "spearman"), 
+            kendall = cor(tmedia,chuva, method = "kendall"))
+
+```
+Para a cidade de João Pessoa, tanto para o coeficiente de Spearman, quanto para Kendall, o volume de chuva e a temperatura semanal média apresentam uma relação fraca decrescente. 
+
